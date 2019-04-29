@@ -150,6 +150,12 @@ pipeline {
               }
             }
           }
+          post {
+            always {
+              // Clean up the working space at the end (including tracked files)
+              cleanWs()
+            }
+          }
         }
       }
     }
