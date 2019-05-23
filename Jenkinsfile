@@ -26,6 +26,7 @@ pipeline {
 
       // ENVs for sanitycheck
       ARCH = "-a arm"
+      PLATFORM = "-p nrf9160_pca10090 -p nrf52_pca10040 -p nrf52840_pca10056 -p nrf51_pca10028"
       SANITYCHECK_OPTIONS = "--inline-logs --enable-coverage -N"
       SANITYCHECK_RETRY = "--only-failed --outdir=out-2nd-pass"
       SANITYCHECK_RETRY_2 = "--only-failed --outdir=out-3rd-pass"
@@ -94,10 +95,23 @@ pipeline {
               sh "echo variant: $ZEPHYR_TOOLCHAIN_VARIANT"
               sh "echo SDK dir: $ZEPHYR_SDK_INSTALL_DIR"
               sh "cat /opt/zephyr-sdk/sdk_version"
-	      sh "source zephyr-env.sh && \
-                  (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH || \
-                  (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
-                  (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
+
+              script {
+                // IF PR test only nRF platform.
+	            if (env.CHANGE_TARGET) {
+PLATFORM
+                  sh "source zephyr-env.sh && \
+                      (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM || \
+                      (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
+                      (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
+	            }
+	            else {
+	              sh "source zephyr-env.sh && \
+                      (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH || \
+                      (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
+                      (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
+                }
+              }
             }
           }
         }
