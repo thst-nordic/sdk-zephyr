@@ -85,8 +85,6 @@ pipeline {
                 }
               }
             }
-          }
-          stages {
             stage('Build Examples on Windows') {
               steps {
                 script {
