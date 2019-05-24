@@ -81,10 +81,7 @@ pipeline {
                   echo bat(returnStdout: true, script: 'set')
                   // echo "${env.PATH}"
 
-                  echo bat(returnStdout: true, script: "docker run --rm -v ${WORKSPACE}:C:\\jenkins ${IMAGE_TAG_WINDOWS} cmd.exe /C dir jenkins\\zephyr\\scripts\\ci\\windows")
-                  
-                  //echo bat(returnStdout: true, script: "docker run --rm -v ${WORKSPACE}:C:\\jenkins ${IMAGE_TAG_WINDOWS} Start-Process C:\\jenkins\\zephyr\\scripts\\ci\\windows\\checkout.bat")
-
+                  echo bat(returnStdout: true, script: "docker run --rm -v ${WORKSPACE}:C:\\jenkins ${IMAGE_TAG_WINDOWS} cmd.exe /C call jenkins\\zephyr\\scripts\\ci\\windows\\checkout.bat")
                 }
               }
             }
