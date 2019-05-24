@@ -86,6 +86,15 @@ pipeline {
               }
             }
           }
+          stages {
+            stage('Build Examples on Windows') {
+              steps {
+                script {
+                  echo bat(returnStdout: true, script: "docker run --rm -v ${WORKSPACE}:C:\\jenkins ${IMAGE_TAG_WINDOWS} cmd.exe /C call jenkins\\zephyr\\scripts\\ci\\windows\\build_samples.bat")
+                }
+              }
+            }
+          }
           post {
             always {
               // Clean up the working space at the end (including tracked files)
