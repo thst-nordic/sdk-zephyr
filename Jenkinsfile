@@ -3,14 +3,8 @@ def REPO_CI_TOOLS = "https://github.com/zephyrproject-rtos/ci-tools.git"
 def REPO_CI_TOOLS_SHA = "9f4dc0be401c2b1e9b1c647513fb996bd8abd057"
 
 pipeline {
-  agent {
-    docker {
-      image "$IMAGE_TAG"
-      label "docker && build-node && ncs"
-      args '-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/workdir/.local/bin'
-    }
-  }
-  options {
+  agent none
+    options {
     // Checkout the repository to this folder instead of root
     checkoutToSubdirectory('zephyr')
   }
@@ -37,28 +31,32 @@ pipeline {
   }
 
   stages {
-    stage('Checkout repositories') {
-      steps {
-        dir("ci-tools") {
-          git branch: "master", url: "$REPO_CI_TOOLS"
-          sh "git checkout ${REPO_CI_TOOLS_SHA}"
-        }
-	dir('zephyr') {
-          sh "git rev-parse HEAD"
-	}
-
-        // Initialize west
-        sh "west init -l zephyr/"
-
-        // Checkout
-        sh "west update"
-      }
-    }
-
     stage('Testing') {
       parallel {
         stage('Run compliance check') {
+         	agent {
+              docker {
+                image "$IMAGE_TAG"
+                label "docker && build-node && ncs"
+                args '-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/workdir/.local/bin'
+              }
+            }
           steps {
+            dir("ci-tools") {
+              git branch: "master", url: "$REPO_CI_TOOLS"
+              sh "git checkout ${REPO_CI_TOOLS_SHA}"
+            }
+            
+            dir('zephyr') {
+              sh "git rev-parse HEAD"
+	        }
+	        
+            // Initialize west
+            sh "west init -l zephyr/"
+
+            // Checkout
+            sh "west update"
+            
             dir('zephyr') {
               script {
                 // If we're a pull request, compare the target branch against the current HEAD (the PR)
@@ -86,29 +84,172 @@ pipeline {
               }
             }
           }
+          post {
+              always {
+                  cleanWs()
+              }
+           }
+        }
+        
+        stage('Sanitycheck (nRF5832_pca10040)') {
+        	when {
+        	    changeRequest()
+        	}
+        	agent {
+              docker {
+                image "$IMAGE_TAG"
+                label "docker && build-node && ncs"
+                args '-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/workdir/.local/bin'
+              }
+            }
+        	environment {
+	            PLATFORM = " -p nrf52_pca10040"
+	        }
+
+        	steps {
+            // Initialize west
+            sh "west init -l zephyr/"
+
+            // Checkout
+            sh "west update"
+        	    dir('zephyr') {
+        	      sh "echo variant: $ZEPHYR_TOOLCHAIN_VARIANT"
+                  sh "echo SDK dir: $ZEPHYR_SDK_INSTALL_DIR"
+                  sh "cat /opt/zephyr-sdk/sdk_version"
+    
+                  sh "source zephyr-env.sh && \
+                     (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM || \
+                     (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
+                     (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
+                }      	    
+        	}
+           post {
+               always {
+                   cleanWs()
+               }
+
+           }                        
         }
 
+        stage('Sanitycheck (nRF5840_pca10056)') {
+        	when {
+        	    changeRequest()
+        	}
+        	agent {
+              docker {
+                image "$IMAGE_TAG"
+                label "docker && build-node && ncs"
+                args '-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/workdir/.local/bin'
+              }
+            }
+            
+        	environment {
+	            PLATFORM = " -p nrf52840_pca10056"
+	        }
+        	
+        	steps {
+            // Initialize west
+            sh "west init -l zephyr/"
+
+            // Checkout
+            sh "west update"
+                    	
+        	    dir('zephyr') {    
+        	      sh "echo variant: $ZEPHYR_TOOLCHAIN_VARIANT"
+                  sh "echo SDK dir: $ZEPHYR_SDK_INSTALL_DIR"
+                  sh "cat /opt/zephyr-sdk/sdk_version"
+    
+                  sh "source zephyr-env.sh && \
+                     (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM || \
+                     (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
+                     (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
+                }      	    
+        	}
+           post {
+               always {
+                   cleanWs()
+               }
+
+           }                       
+        }
+        
+        stage('Sanitycheck (nrf9160_pca10090)') {
+        	when {
+        	  changeRequest()
+        	}
+        	agent {
+              docker {
+                image "$IMAGE_TAG"
+                label "docker && build-node && ncs"
+                args '-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/workdir/.local/bin'
+              }
+            }
+        	environment {
+	            PLATFORM = " -p nrf9160_pca10090"
+	        }
+        	
+        	steps {
+            // Initialize west
+            sh "west init -l zephyr/"
+
+            // Checkout
+            sh "west update"
+                    	
+        	    dir('zephyr') {                        	    
+        	      sh "echo variant: $ZEPHYR_TOOLCHAIN_VARIANT"
+                  sh "echo SDK dir: $ZEPHYR_SDK_INSTALL_DIR"
+                  sh "cat /opt/zephyr-sdk/sdk_version"
+    
+                  sh "source zephyr-env.sh && \
+                     (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM || \
+                     (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
+                     (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
+                }      	    
+        	}
+           post {
+               always {
+                   cleanWs()
+               }
+
+           }                        
+        }
+        
         stage('Sanitycheck (all)') {
+          when {
+              not { changeRequest() }
+          }
+          agent {
+            docker {
+              image "$IMAGE_TAG"
+              label "docker && build-node && ncs"
+              args '-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/workdir/.local/bin'
+            }
+          }
           steps {
-            dir('zephyr') {
+            // Initialize west
+            sh "west init -l zephyr/"
+
+            // Checkout
+            sh "west update"
+
+            dir('zephyr') {                 
               sh "echo variant: $ZEPHYR_TOOLCHAIN_VARIANT"
               sh "echo SDK dir: $ZEPHYR_SDK_INSTALL_DIR"
               sh "cat /opt/zephyr-sdk/sdk_version"
-	      sh "source zephyr-env.sh && \
-                  (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH || \
-                  (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
-                  (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
-            }
-          }
-        }
-      }
-    }
-  }
 
-  post {
-    always {
-      // Clean up the working space at the end (including tracked files)
-      cleanWs()
+	          sh "source zephyr-env.sh && \
+                 (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH || \
+                 (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
+                 (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
+                }
+           }
+           post {
+               always {
+                   cleanWs()
+               }
+           }
+         }
+      }
     }
   }
 }
