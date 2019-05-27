@@ -51,11 +51,67 @@ pipeline {
             checkoutToSubdirectory('zephyr')
           }
           stages {
-            stage('Checkout repositories') {
-              steps {
-                sh "echo SKIP"
+              stage('Checkout repositories') {
+                  steps {
+                      dir("ci-tools") {
+                          git branch: "master", url: "$REPO_CI_TOOLS"
+                          sh "git checkout ${REPO_CI_TOOLS_SHA}"
+                      }
+                      dir('zephyr') {
+                          sh "git rev-parse HEAD"
+                      }
+                      // Initialize west
+                      sh "west init -l zephyr/"
+                      // Checkout
+                      sh "west update"
+                  }
               }
-            }
+              stage('Testing') {
+                parallel {
+                  stage('Run compliance check') {
+                    steps {
+                      dir('zephyr') {
+                        script {
+                          // If we're a pull request, compare the target branch against the current HEAD (the PR)
+                          if (env.CHANGE_TARGET) {
+                            COMMIT_RANGE = "origin/$CHANGE_TARGET..HEAD"
+                            COMPLIANCE_ARGS = "$COMPLIANCE_ARGS $COMPLIANCE_REPORT_ARGS"
+                            sh "echo change id: $CHANGE_ID"
+                            sh "echo git commit: $GIT_COMMIT"
+                            sh "echo commit range: $COMMIT_RANGE"
+                            sh "git rev-parse origin/$CHANGE_TARGET"
+                            sh "git rev-parse HEAD"
+                          }
+                          // If not a PR, it's a non-PR-branch or master build. Compare against the origin.
+                          else {
+                            COMMIT_RANGE = "origin/${env.BRANCH_NAME}..HEAD"
+                          }
+                          // Run the compliance check
+                          try {
+                            sh "(source zephyr-env.sh && ../ci-tools/scripts/check_compliance.py $COMPLIANCE_ARGS --commits $COMMIT_RANGE)"
+                          }
+                          finally {
+                            junit 'compliance.xml'
+                            archiveArtifacts artifacts: 'compliance.xml'
+                          }
+                        }
+                      }
+                    }
+                  }
+                  stage('Sanitycheck (all)') {
+                    steps {
+                      dir('zephyr') {
+                        sh "echo variant: $ZEPHYR_TOOLCHAIN_VARIANT"
+                        sh "echo SDK dir: $ZEPHYR_SDK_INSTALL_DIR"
+                        sh "cat /opt/zephyr-sdk/sdk_version"
+                        sh "source zephyr-env.sh && \
+                            (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH || \
+                            (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
+                            (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
+                      }
+                    }
+                  }
+              }
           }
           post {
             always {
