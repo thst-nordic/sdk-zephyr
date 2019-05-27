@@ -27,3 +27,7 @@ cd C:\jenkins\zephyr\scripts
 
 python sanitycheck --build-only --platform nrf52_pca10040 --tag bluetooth --ninja --disable-size-report
 
+echo ERROR_LEVEL = %ERROR_LEVEL%
+
+echo EXITING WITH -20 TO FAIL
+EXIT /B -20
