@@ -132,30 +132,23 @@ pipeline {
             checkoutToSubdirectory('zephyr')
           }
           stages {
-            stage('Checkout repositories') {
+            stage('Checkout & Build') {
               steps {
                 script {
-                  println("IMAGE_TAG_WINDOWS = ${IMAGE_TAG_WINDOWS}")
-                  println("WORKSPACE = ${WORKSPACE}")
-                  echo bat(returnStdout: true, script: 'set')
-                  // echo "${env.PATH}"
-                  //println("skip")
+                              //println("IMAGE_TAG_WINDOWS = ${IMAGE_TAG_WINDOWS}")
+                              //println("WORKSPACE = ${WORKSPACE}")
+                              //echo bat(returnStdout: true, script: 'set')
+                              // echo "${env.PATH}"
+                              //println("skip")
                   echo bat(returnStdout: true, script: "docker run --rm -v ${WORKSPACE}:C:\\jenkins ${IMAGE_TAG_WINDOWS} cmd.exe /C call jenkins\\zephyr\\scripts\\ci\\windows\\run.cmd")
                 }
               }
             }
-         //   stage('Build Examples on Windows') {
-         //     steps {
-         //       script {
-         //         echo bat(returnStdout: true, script: "docker run --rm -v ${WORKSPACE}:C:\\jenkins ${IMAGE_TAG_WINDOWS} cmd.exe /C call jenkins\\zephyr\\scripts\\ci\\windows\\sanitycheck.bat")
-         //       }
-         //     }
-         //   }
           }
           post {
             always {
               // Clean up the working space at the end (including tracked files)
-              // bat "echo skipping cleanup"
+                      // bat "echo skipping cleanup"
               cleanWs()
             }
           }
