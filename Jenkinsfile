@@ -125,7 +125,7 @@ pipeline {
         }
         stage('Win10') {
           agent {
-            label "ncs && build-node && windows && fw-nrfconnect-zephyr && node-build-07"
+            label "ncs && build-node && windows && docker"
           }
           options {
             // Checkout the repository to this folder instead of root
