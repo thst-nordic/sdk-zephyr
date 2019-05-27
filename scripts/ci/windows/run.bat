@@ -25,7 +25,5 @@ call .\zephyr-env.cmd
 
 cd C:\jenkins\zephyr\scripts
 
-choco install make
-
-python sanitycheck --build-only --board nrf52_pca10040 --tag bluetooth --ninja --disable-size-report
+python sanitycheck --build-only --platform nrf52_pca10040 --tag bluetooth --ninja --disable-size-report
 

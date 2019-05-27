@@ -12,8 +12,8 @@ mkdir %ZEPHYR_BASE%\build
 rem Samples to Compile
 
 CALL :compile  samples\hello_world
-rem CALL :compile  samples\basic\threads
-rem CALL :compile  samples\bluetooth\beacon
+CALL :compile  samples\basic\threads
+CALL :compile  samples\bluetooth\beacon
 
 EXIT /B 0 
 
