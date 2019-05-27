@@ -51,7 +51,7 @@ pipeline {
             checkoutToSubdirectory('zephyr')
           }
           stages {
-              stage('Checkout repositories') {
+            stage('Checkout repositories') {
                   steps {
                       dir("ci-tools") {
                           git branch: "master", url: "$REPO_CI_TOOLS"
@@ -65,8 +65,9 @@ pipeline {
                       // Checkout
                       sh "west update"
                   }
-              }
-              stage('Testing') {
+            }
+            stage('Testing') {
+              stages {
                 parallel {
                   stage('Run compliance check') {
                     steps {
@@ -111,7 +112,9 @@ pipeline {
                       }
                     }
                   }
+                }
               }
+            }
           }
           post {
             always {
