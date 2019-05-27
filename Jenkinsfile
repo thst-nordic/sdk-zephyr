@@ -68,7 +68,7 @@ pipeline {
             }
             stage('Testing') {
               stages {
-                parallel {
+                // parallel 
                   stage('Run compliance check') {
                     steps {
                       dir('zephyr') {
@@ -112,7 +112,7 @@ pipeline {
                       }
                     }
                   }
-                }
+                //   // parallel
               }
             }
           }
