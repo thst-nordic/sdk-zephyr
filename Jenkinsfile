@@ -1,5 +1,5 @@
 def IMAGE_TAG = "ncs-toolchain:1.08"
-def IMAGE_TAG_WINDOWS = "itsrv80.nordicsemi.no/ncs-toolchain-windows:0.2.1"
+def IMAGE_TAG_WINDOWS = "itsrv80.nordicsemi.no/ncs-toolchain-windows:0.2.2"
 def REPO_CI_TOOLS = "https://github.com/zephyrproject-rtos/ci-tools.git"
 def REPO_CI_TOOLS_SHA = "9f4dc0be401c2b1e9b1c647513fb996bd8abd057"
 
@@ -155,8 +155,8 @@ pipeline {
           post {
             always {
               // Clean up the working space at the end (including tracked files)
-              bat "echo skipping cleanup"
-              //cleanWs()
+              // bat "echo skipping cleanup"
+              cleanWs()
             }
           }
         }
