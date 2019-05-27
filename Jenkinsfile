@@ -156,8 +156,8 @@ pipeline {
           post {
             always {
               // Clean up the working space at the end (including tracked files)
-              // bat "echo skipping cleanup"
-              cleanWs()
+              bat "echo skipping cleanup"
+              //cleanWs()
             }
           }
         }
