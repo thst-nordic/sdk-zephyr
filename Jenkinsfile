@@ -105,10 +105,10 @@ pipeline {
                         sh "echo variant: $ZEPHYR_TOOLCHAIN_VARIANT"
                         sh "echo SDK dir: $ZEPHYR_SDK_INSTALL_DIR"
                         sh "cat /opt/zephyr-sdk/sdk_version"
-                        sh "source zephyr-env.sh && \
-                            (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH || \
-                            (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
-                            (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
+                        // sh "source zephyr-env.sh && \
+                        //  (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH || \
+                        //  (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
+                        //  (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
                       }
                     }
                   }
