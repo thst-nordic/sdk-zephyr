@@ -1371,7 +1371,6 @@ class MakeGenerator:
                     continue
 
                 state, name, _, error = m.groups()
-                name = name.strip()
                 if error:
                     goal = self.goals[error]
                     # Sometimes QEMU will run an image and then crash out, which
@@ -1386,7 +1385,7 @@ class MakeGenerator:
                         goal.fail("unknown_error")
 
                 else:
-                    goal = self.goals[name]
+                    goal = self.goals[name.strip()]
                     goal.make_state = state
 
                     if state == "finished":
