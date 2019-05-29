@@ -2,6 +2,10 @@ def IMAGE_TAG = "ncs-toolchain:1.08"
 def REPO_CI_TOOLS = "https://github.com/zephyrproject-rtos/ci-tools.git"
 def REPO_CI_TOOLS_SHA = "9f4dc0be401c2b1e9b1c647513fb996bd8abd057"
 
+// LINUX AGENTS
+def PLATFORM_LIST  = ["nrf9160_pca10090ns", "nrf52840_pca10056", "nrf52_pca10040"]
+def IMAGE_TAG = "ncs-toolchain:1.09"
+
 pipeline {
   agent {
     docker {
@@ -44,9 +48,9 @@ pipeline {
           git branch: "master", url: "$REPO_CI_TOOLS"
           sh "git checkout ${REPO_CI_TOOLS_SHA}"
         }
-	dir('zephyr') {
+        dir('zephyr') {
           sh "git rev-parse HEAD"
-	}
+        }
 
         // Initialize west
         sh "west init -l zephyr/"
@@ -98,15 +102,14 @@ pipeline {
 
               script {
                 // IF PR test only nRF platform.
-	          if (env.CHANGE_TARGET) {
-PLATFORM
+                if (env.CHANGE_TARGET) {
                   sh "source zephyr-env.sh && \
                       (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM || \
                       (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
                       (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
-	            }
-	            else {
-	              sh "source zephyr-env.sh && \
+                }
+                else {
+                  sh "source zephyr-env.sh && \
                       (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH || \
                       (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY) || \
                       (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS $SANITYCHECK_RETRY_2))"
