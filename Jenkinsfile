@@ -6,7 +6,7 @@ pipeline {
   agent {
     docker {
       image "$IMAGE_TAG"
-      label "docker && build-node && ncs"
+      label "docker && build-node && ncs && linux"
       args '-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/workdir/.local/bin'
     }
   }
