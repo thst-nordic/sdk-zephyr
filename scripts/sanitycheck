@@ -2194,7 +2194,6 @@ class TestSuite:
         for k, out_config in defconfig_list.items():
             test, plat, name = k
             defconfig = {}
-            # os.makedirs(os.path.dirname(out_config), exist_ok=True)
             with open(out_config, "r") as fp:
                 for line in fp.readlines():
                     m = TestSuite.config_re.match(line)
@@ -3216,8 +3215,8 @@ def main():
             print("Testing with sanitycheck on Windows is not supported yet.")
             print("Only Building without size report works for noww with some notes:")
             print("\t- '--build-only --disable-size-report'")
-            print("\t- Requires make to build: 'choco install make'")
-            print("\t- You may need to enable long-path support in Windows OS.")
+            print("\t- Requires make: 'choco install make'")
+            print("\t- May require long-path support in Windows OS.")
             print("\t- https://github.com/zephyrproject-rtos/zephyr/issues/2664")
             sys.exit(-1)
 
