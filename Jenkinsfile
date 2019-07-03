@@ -65,7 +65,7 @@ pipeline {
           CI_STATE = lib_State.load(params['jsonstr_CI_STATE'])
           lib_State.store('ZEPHYR', CI_STATE)
           lib_State.getParentJob(CI_STATE)
-          lib_State.add2jobStack('ZEPHYR', CI_STATE)
+          lib_State.pushjobStack('ZEPHYR', CI_STATE)
           println "CI_STATE = $CI_STATE"
         }
       }
