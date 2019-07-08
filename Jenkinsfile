@@ -158,7 +158,7 @@ pipeline {
           def DOWNSTREAM_JOBS = lib_Main.getDownStreamJobs(CI_STATE, 'ZEPHYR')
           println "DOWNSTREAM_JOBS = " + DOWNSTREAM_JOBS
           lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.REPORT_SHA, CI_STATE)
-          lib_West.ApplyManfestUpdates(CI_STATE)
+          // lib_West.ApplyManfestUpdates(CI_STATE)
           def jobs = [:]
           DOWNSTREAM_JOBS.each {
             jobs["${it}"] = {
