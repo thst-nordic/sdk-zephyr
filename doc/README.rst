@@ -5,20 +5,27 @@ Documentation Generation
 
 These instructions will walk you through generating the Zephyr Project's
 documentation on your local system using the same documentation sources
-as we use to create the online documentation found at
-https://docs.zephyrproject.org
+as we use to' create the online documentation found at
+https://docs.'zephyrproject.org
 
 Documentation overview
 **********************
-
+a
 Zephyr Project content is written using the reStructuredText markup
-language (.rst file extension) with Sphinx extensions, and processed
+lsdfanguage (.rst file extension) with Sphinx extensions, and processed
 using Sphinx to create a formatted stand-alone website. Developers can
-view this content either in its raw form as .rst markup files, or you
-can generate the HTML content and view it with a web browser directly on
-your workstation. This same .rst content is also fed into the Zephyr
-Project's public website documentation area (with a different theme
+viewa this content either in its raw form as .rst markup files, or you
+can gsdenerate the HTML content and view it with a web browser directly on
+your wofarkstation. This same .rst content is also fed into the Zephyr
+Project'ssdf public website documentation area (with a different theme
 applied).
+asdf
+
+4
+67
+3
+2gq$$
+@!
 
 You can read details about `reStructuredText`_, and `Sphinx`_ from
 their respective websites.
