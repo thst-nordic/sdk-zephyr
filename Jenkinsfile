@@ -2,6 +2,7 @@
 @Library("CI_LIB@lib_master") _
 
 def IMAGE_TAG = lib_Main.getDockerImage(JOB_NAME)
+def AGENT_LABELS = lib_Main.getAgentLabels(JOB_NAME)
 def REPO_CI_TOOLS = "https://github.com/zephyrproject-rtos/ci-tools.git"
 def REPO_CI_TOOLS_SHA = "bfe635f102271a4ad71c1a14824f9d5e64734e57"
 def CI_STATE = new HashMap()
@@ -21,7 +22,7 @@ pipeline {
   agent {
     docker {
       image "$IMAGE_TAG"
-      label "docker && build-node && ncs && linux"
+      label "$AGENT_LABELS"
       args '-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/workdir/.local/bin'
     }
   }
