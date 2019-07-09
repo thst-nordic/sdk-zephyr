@@ -73,7 +73,7 @@ pipeline {
     }
 
     stage('Checkout repositories') {
-      when { expression { CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
+      when { expression {  true || CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
       steps {
         script {
           CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "zephyr", CI_STATE, false)
