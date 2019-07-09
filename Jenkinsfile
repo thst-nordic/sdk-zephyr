@@ -55,13 +55,6 @@ pipeline {
   stages {
     stage('Load') {
       steps {
-        println "Using Node:$NODE_NAME and Input Parameters:$params"
-        println "Input CI_STATE:${params['jsonstr_CI_STATE']}"
-        dir("ci-tools") {
-          git branch: "master", url: "$REPO_CI_TOOLS"
-          sh "git checkout ${REPO_CI_TOOLS_SHA}"
-        }
-
         script {
           CI_STATE = lib_State.load(params['jsonstr_CI_STATE'])
           lib_State.store('ZEPHYR', CI_STATE)
@@ -72,18 +65,18 @@ pipeline {
       }
     }
     stage('Checkout repositories') {
-      when { expression {  true || CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
+      when { expression {  CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
       steps {
         script {
+          lib_Main.cloneCItools(JOB_NAME)
           CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "zephyr", CI_STATE, false)
-          println "CI_STATE.ZEPHYR.REPORT_SHA = " + CI_STATE.ZEPHYR.REPORT_SHA
-          lib_West.InitUpdate('zephyr')
           lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.REPORT_SHA, CI_STATE)
+          lib_West.InitUpdate('zephyr')
         }
       }
     }
     stage('Apply Parent Manifest Updates') {
-      when { expression { true || CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
+      when { expression { CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
       steps {
         script {
           println "If triggered by an upstream Project, use their changes."
@@ -96,36 +89,28 @@ pipeline {
       steps {
         dir('zephyr') {
           script {
-            // If we're a pull request, compare the target branch against the current HEAD (the PR)
-            println "CHANGE_TARGET = ${env.CHANGE_TARGET}"
-            println "BRANCH_NAME = ${env.BRANCH_NAME}"
-            println "TAG_NAME = ${env.TAG_NAME}"
-
-            if (env.CHANGE_TARGET) {
-              COMMIT_RANGE = "origin/${env.CHANGE_TARGET}..HEAD"
-              COMPLIANCE_ARGS = "$COMPLIANCE_ARGS $COMPLIANCE_REPORT_ARGS"
-              sh "echo change id: $CHANGE_ID"
-              sh "echo git commit: $GIT_COMMIT"
-              sh "echo commit range: $COMMIT_RANGE"
-              sh "git rev-parse origin/$CHANGE_TARGET"
-              sh "git rev-parse HEAD"
-              println "Building a PR: ${COMMIT_RANGE}"
+            def BUILD_TYPE = lib_Main.getBuildType(CI_STATE.ZEPHYR)
+            if (BUILD_TYPE == "PR") {
+              COMMIT_RANGE = "$CI_STATE.ZEPHYR.MERGE_BASE..$CI_STATE.ZEPHYR.REPORT_SHA"
+              COMPLIANCE_ARGS = "$COMPLIANCE_ARGS -p $CHANGE_ID -S $CI_STATE.ZEPHYR.REPORT_SHA -g"
+              println "Building a PR [$CHANGE_ID]: $COMMIT_RANGE"
             }
-            else if (env.TAG_NAME) {
+            else if (BUILD_TYPE == "TAG") {
               COMMIT_RANGE = "tags/${env.BRANCH_NAME}..tags/${env.BRANCH_NAME}"
-              println "Building a Tag: ${COMMIT_RANGE}"
+              println "Building a Tag: " + COMMIT_RANGE
             }
             // If not a PR, it's a non-PR-branch or master build. Compare against the origin.
-            else if (env.BRANCH_NAME) {
+            else if (BUILD_TYPE == "BRANCH") {
               COMMIT_RANGE = "origin/${env.BRANCH_NAME}..HEAD"
-              println "Building a Branch: ${COMMIT_RANGE}"
+              println "Building a Branch: " + COMMIT_RANGE
             }
             else {
                 assert condition : "Build fails because it is not a PR/Tag/Branch"
             }
+
             // Run the compliance check
             try {
-              sh "(source zephyr-env.sh && ../ci-tools/scripts/check_compliance.py $COMPLIANCE_ARGS --commits $COMMIT_RANGE)"
+              sh "(source ../zephyr/zephyr-env.sh && ../ci-tools/scripts/check_compliance.py $COMPLIANCE_ARGS --commits $COMMIT_RANGE)"
             }
             finally {
               junit 'compliance.xml'
@@ -172,6 +157,7 @@ pipeline {
   }
 
   post {
+    // This is the order that the methods are run. {always->success/abort/failure/unstable->cleanup}
     always {
       echo "always"
     }
