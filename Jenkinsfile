@@ -83,7 +83,7 @@ pipeline {
       }
     }
     stage('Apply Parent Manifest Updates') {
-      when { expression { CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
+      when { expression { true || CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
       steps {
         script {
           println "If triggered by an upstream Project, use their changes."
