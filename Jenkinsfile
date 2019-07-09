@@ -71,7 +71,6 @@ pipeline {
         }
       }
     }
-
     stage('Checkout repositories') {
       when { expression {  true || CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
       steps {
@@ -79,6 +78,7 @@ pipeline {
           CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "zephyr", CI_STATE, false)
           println "CI_STATE.ZEPHYR.REPORT_SHA = " + CI_STATE.ZEPHYR.REPORT_SHA
           lib_West.InitUpdate('zephyr')
+          lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.REPORT_SHA, CI_STATE)
         }
       }
     }
@@ -157,8 +157,7 @@ pipeline {
           CI_STATE.ZEPHYR.WAITING = true
           def DOWNSTREAM_JOBS = lib_Main.getDownStreamJobs(CI_STATE, 'ZEPHYR')
           println "DOWNSTREAM_JOBS = " + DOWNSTREAM_JOBS
-          lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.REPORT_SHA, CI_STATE)
-          // lib_West.ApplyManfestUpdates(CI_STATE)
+
           def jobs = [:]
           DOWNSTREAM_JOBS.each {
             jobs["${it}"] = {
