@@ -174,8 +174,23 @@ pipeline {
 
   post {
     always {
-      // Clean up the working space at the end (including tracked files)
-      cleanWs()
+      echo "always"
+    }
+    success {
+      echo "success"
+    }
+    aborted {
+      echo "aborted"
+    }
+    unstable {
+      echo "unstable"
+    }
+    failure {
+      echo "failure"
+    }
+    cleanup {
+        echo "cleanup"
+        cleanWs()
     }
   }
 }
