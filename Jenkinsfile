@@ -27,6 +27,7 @@ pipeline {
     // Checkout the repository to this folder instead of root
     checkoutToSubdirectory('zephyr')
     // skipDefaultCheckout()
+    parallelsAlwaysFailFast()
     timeout(time: TIMEOUT.time, unit: TIMEOUT.unit)
   }
 
@@ -55,29 +56,31 @@ pipeline {
 
   stages {
     stage('Load') { steps { script { CI_STATE = lib_Stage.load('ZEPHYR') }}}
-    stage('Run compliance check') {
-      when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
-      parallel {
-        stage ('asdf') {
-          steps {
-            node(AGENT_LABELS) {
-              stages { steps { script {
-                docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
+    stage('ALL') {
+      steps { script {
+        def jobs = [:]
+        jobs['compliance'] = {
+          node(AGENT_LABELS) {
+            when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
+            stage('asdf') {
+              docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
+                script {
                   println "help"
-                  lib_Main.cloneCItools(JOB_NAME)
-                  dir('zephyr') {
-                    checkout scm
-                    CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
-                    lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
-                  }
-                  lib_West.InitUpdate('zephyr')
-                  lib_West.ApplyManifestUpdates(CI_STATE)
-                } // docker
-              } } }
+                }
+                // lib_Main.cloneCItools(JOB_NAME)
+                // dir('zephyr') {
+                //   checkout scm
+                //   CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
+                //   lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
+                // }
+                // lib_West.InitUpdate('zephyr')
+                // lib_West.ApplyManifestUpdates(CI_STATE)
+              } // docker
             }
           }
         }
-      }
+        parallel jobs
+      } }
     } // stage
             //   steps { script {
             //     dir('zephyr') {
