@@ -115,10 +115,10 @@ pipeline {
           steps { script {
             dir('zephyr') {
               def jobs = [:]
-              println "CI_STATE.ZEPHYR.PLATFORMS = $CI_STATE.ZEPHYR.PLATFORMS"
+              // println "CI_STATE.ZEPHYR.PLATFORMS = $CI_STATE.ZEPHYR.PLATFORMS"
               def PLATFORM_LIST = lib_Main.getPlatformList(CI_STATE.ZEPHYR.PLATFORMS)
-              println "PLATFORM_LIST = $PLATFORM_LIST"
-              println "AGENT_LABELS = $AGENT_LABELS"
+              // println "PLATFORM_LIST = $PLATFORM_LIST"
+              // println "AGENT_LABELS = $AGENT_LABELS"
               PLATFORM_LIST.eachWithIndex { PLATFORM, index ->
                 jobs[PLATFORM] = {
                   node(AGENT_LABELS) {
@@ -135,7 +135,7 @@ pipeline {
                                   checkout scm
                                   CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
                                   lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
-                                  sh "pwd; ls -al"
+                                  // sh "pwd; ls -al"
                                 }
                                 sh "pwd; ls -al"
                                 lib_West.InitUpdate('zephyr')
@@ -184,26 +184,26 @@ pipeline {
       }
     }
 
-    stage('Trigger testing build') {
-      when { expression { CI_STATE.ZEPHYR.RUN_DOWNSTREAM } }
-      steps {
-        script {
-          CI_STATE.ZEPHYR.WAITING = true
-          def DOWNSTREAM_JOBS = lib_Main.getDownStreamJobs(JOB_NAME)
-          println "DOWNSTREAM_JOBS = " + DOWNSTREAM_JOBS
+  //   stage('Trigger testing build') {
+  //     when { expression { CI_STATE.ZEPHYR.RUN_DOWNSTREAM } }
+  //     steps {
+  //       script {
+  //         CI_STATE.ZEPHYR.WAITING = true
+  //         def DOWNSTREAM_JOBS = lib_Main.getDownStreamJobs(JOB_NAME)
+  //         println "DOWNSTREAM_JOBS = " + DOWNSTREAM_JOBS
 
-          def jobs = [:]
-          DOWNSTREAM_JOBS.each {
-            jobs["${it}"] = {
-              build job: "${it}", propagate: true, wait: CI_STATE.ZEPHYR.WAITING, parameters: [
-                        string(name: 'jsonstr_CI_STATE', value: lib_Util.HashMap2Str(CI_STATE))]
-            }
-          }
-          parallel jobs
-        }
-      }
-    }
-  }
+  //         def jobs = [:]
+  //         DOWNSTREAM_JOBS.each {
+  //           jobs["${it}"] = {
+  //             build job: "${it}", propagate: true, wait: CI_STATE.ZEPHYR.WAITING, parameters: [
+  //                       string(name: 'jsonstr_CI_STATE', value: lib_Util.HashMap2Str(CI_STATE))]
+  //           }
+  //         }
+  //         parallel jobs
+  //       }
+  //     }
+  //   }
+  // }
 
   post {
     // This is the order that the methods are run. {always->success/abort/failure/unstable->cleanup}
@@ -227,7 +227,7 @@ pipeline {
     }
     cleanup {
         echo "cleanup"
-        cleanWs()
+        // cleanWs()
     }
   }
 }
