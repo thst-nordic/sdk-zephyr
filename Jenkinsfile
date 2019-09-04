@@ -142,8 +142,10 @@ pipeline {
                                 lib_West.ApplyManifestUpdates(CI_STATE)
                                 println "PLATFORM = $PLATFORM"
                                 println "PLATFORM_ARGS = $PLATFORM_ARGS"
-                                sh "source zephyr-env.sh && \
+                                dir('zephyr') {
+                                  sh "source zephyr-env.sh && \
                                       (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM_ARGS || $SANITYCHECK_RETRY_CMDS"
+                                }
                             }
                         }
                       }
