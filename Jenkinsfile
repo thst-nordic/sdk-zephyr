@@ -19,9 +19,9 @@ pipeline {
               defaultValue: INPUT_STATE)
   }
 
-  agent { label AGENT_LABELS }
-  // agent { docker { image IMAGE_TAG
-                   // label AGENT_LABELS }}
+  // agent { label AGENT_LABELS }
+  agent { docker { image IMAGE_TAG
+                   label AGENT_LABELS }}
 
   options {
     // Checkout the repository to this folder instead of root
@@ -54,23 +54,23 @@ pipeline {
 
   stages {
     stage('Load') { steps { script { CI_STATE = lib_Stage.load('ZEPHYR') }}}
-    // stage('Checkout') {
-    //   steps { script {
-    //     lib_Main.cloneCItools(JOB_NAME)
-    //     dir('zephyr') {
-    //       CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
-    //       lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
-    //     }
-    //   }}
-    // }
-    // stage('Get nRF && Apply Parent Manifest Updates') {
-    //   when { expression { CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
-    //   steps { script {
-    //     lib_Status.set("PENDING", 'ZEPHYR', CI_STATE);
-    //     lib_West.InitUpdate('zephyr')
-    //     lib_West.ApplyManifestUpdates(CI_STATE)
-    //   }}
-    // }
+    stage('Checkout') {
+      steps { script {
+        lib_Main.cloneCItools(JOB_NAME)
+        dir('zephyr') {
+          CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
+          lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
+        }
+      }}
+    }
+    stage('Get nRF && Apply Parent Manifest Updates') {
+      when { expression { CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
+      steps { script {
+        lib_Status.set("PENDING", 'ZEPHYR', CI_STATE);
+        lib_West.InitUpdate('zephyr')
+        lib_West.ApplyManifestUpdates(CI_STATE)
+      }}
+    }
     // stage('Run compliance check') {
     //   when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
     //   steps {
