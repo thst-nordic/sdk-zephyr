@@ -61,10 +61,21 @@ pipeline {
         def jobs = [:]
         jobs['compliance'] = {
           node(AGENT_LABELS) {
-            stage('asdf') {
-              when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
-              docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
-                println "help"
+            stages {
+              stage('asdf') {
+                when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
+                steps { script {
+                  docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
+                    println "help"
+                  } // docker
+                } }
+              }
+            }
+          }
+        }
+        parallel jobs
+      } }
+    } // stage
                 // script {
                 // }
                 // lib_Main.cloneCItools(JOB_NAME)
@@ -75,13 +86,6 @@ pipeline {
                 // }
                 // lib_West.InitUpdate('zephyr')
                 // lib_West.ApplyManifestUpdates(CI_STATE)
-              } // docker
-            }
-          }
-        }
-        parallel jobs
-      } }
-    } // stage
             //   steps { script {
             //     dir('zephyr') {
             //       def BUILD_TYPE = lib_Main.getBuildType(CI_STATE.ZEPHYR)
