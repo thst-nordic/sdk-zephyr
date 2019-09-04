@@ -123,7 +123,6 @@ pipeline {
                 jobs[PLATFORM] = {
                   node(AGENT_LABELS) {
                     stage("SanityCheck - $PLATFORM"){
-                      checkout scm
                       println "IMAGE_TAG = $IMAGE_TAG"
                       docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
                         stage("$PLATFORM") {
@@ -135,6 +134,7 @@ pipeline {
                                 println "Using Node:$NODE_NAME and Input Parameters:"
                                 lib_Main.cloneCItools(JOB_NAME)
                                 dir('zephyr') {
+                                  checkout scm
                                   CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
                                   lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
                                   sh "pwd; ls -al"
