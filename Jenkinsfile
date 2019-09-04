@@ -58,23 +58,41 @@ pipeline {
     stage('Load') { steps { script { CI_STATE = lib_Stage.load('ZEPHYR') }}}
     stage('ALL') {
       steps { script {
-        def jobs = [:]
-        jobs['compliance'] = {
-          node(AGENT_LABELS) {
-            stages {
-              stage('asdf') {
-                when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
-                steps { script {
-                  docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
-                    println "help"
-                  } // docker
-                } }
-              }
+        parallel (
+          "Compliance" : {
+            node (AGENT_LABELS) {
+              docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
+                println "help"
+              } // docker
             }
-          }
-        }
-        parallel jobs
+          },
+          "Sanity" : {
+            node (AGENT_LABELS) {
+              docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
+                println "help"
+              } // docker
+            }
+           }
+        )
       } }
+      // steps { script {
+      //   def jobs = [:]
+      //   jobs['compliance'] = {
+      //     node(AGENT_LABELS) {
+      //       stages {
+      //         stage('asdf') {
+      //           when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
+      //           steps { script {
+      //             docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
+      //               println "help"
+      //             } // docker
+      //           } }
+      //         }
+      //       }
+      //     }
+      //   }
+      //   parallel jobs
+      // } }
     } // stage
                 // script {
                 // }
