@@ -114,9 +114,15 @@ pipeline {
         stage('nRF Platforms') {
           steps { script {
             dir('zephyr') {
-              def PLATFORM_ARGS = lib_Main.getPlatformArgs(CI_STATE.ZEPHYR.PLATFORMS)
-              sh "source zephyr-env.sh && \
-                  (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM_ARGS || $SANITYCHECK_RETRY_CMDS"
+              def jobs = [:]
+              CI_STATE.ZEPHYR.PLATFORMS.each {
+                jobs["${it}"] = {
+                  def PLATFORM_ARGS = lib_Main.getPlatformArgs("${it}")
+                  sh "source zephyr-env.sh && \
+                      (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM_ARGS || $SANITYCHECK_RETRY_CMDS"
+                }
+              }
+              parallel jobs
             }
           }}
         }
