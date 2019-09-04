@@ -58,8 +58,7 @@ pipeline {
     stage('Load') { steps { script { CI_STATE = lib_Stage.load('ZEPHYR') }}}
     stage('ALL') {
       steps { script {
-        def jobs = [:]
-        jobs['compliance'] = {
+        def job = {
               // when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
           node(AGENT_LABELS) {
             stage('asdf') {
@@ -79,7 +78,7 @@ pipeline {
             }
           }
         }
-        parallel jobs
+        parallel job
       } }
     } // stage
             //   steps { script {
