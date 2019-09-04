@@ -136,7 +136,7 @@ pipeline {
                                 lib_Main.cloneCItools(JOB_NAME)
                                 dir('zephyr') {
                                   CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
-                                  // lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
+                                  lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
                                 }
                                 sh "ls -al"
                                 lib_West.InitUpdate('zephyr')
