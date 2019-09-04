@@ -41,7 +41,7 @@ pipeline {
 
       // ENVs for sanitycheck
       ARCH = "-a arm"
-      SANITYCHECK_OPTIONS = "--inline-logs --enable-coverage -N"
+      SANITYCHECK_OPTIONS = "--inline-logs --enable-coverage -N --subset 1/10"
       SANITYCHECK_RETRY_CMDS = """
           (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS --only-failed --outdir=out-2nd-pass) ||
           (sleep 10; ./scripts/sanitycheck $SANITYCHECK_OPTIONS --only-failed --outdir=out-3rd-pass))
