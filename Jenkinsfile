@@ -123,10 +123,7 @@ pipeline {
                 jobs[PLATFORM] = {
                   node(AGENT_LABELS) {
                     stage('SanityCheck'){
-                      println "IMAGE_TAG = $IMAGE_TAG"
                       docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
-                        stage("$PLATFORM") {
-                        }
                         stage("SANITY") {
                             echo "Running on $NODE_NAME and in $IMAGE_TAG"
                             cleanWs()
