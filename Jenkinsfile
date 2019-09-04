@@ -145,7 +145,7 @@ pipeline {
                                       (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM_ARGS || $SANITYCHECK_RETRY_CMDS"
                                 }
                             }
-                            cleanWs()
+                            // cleanWs()
                         }
                       }
                                         // script {
