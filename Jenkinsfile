@@ -57,7 +57,7 @@ pipeline {
     stage('Load') { steps { script { CI_STATE = lib_Stage.load('ZEPHYR') }}}
     stage('Run compliance check') {
       when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
-      stages {
+      parallel {
         stage ('asdf') {
           steps {
             node(AGENT_LABELS) {
