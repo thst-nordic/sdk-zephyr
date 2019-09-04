@@ -127,6 +127,7 @@ pipeline {
                       docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
                         stage("$PLATFORM") {
                             echo "Running in $IMAGE_TAG"
+                            cleanWs()
                         }
                         stage("SANITY") {
                             script {
