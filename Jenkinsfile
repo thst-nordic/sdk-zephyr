@@ -18,13 +18,10 @@ pipeline {
               defaultValue: INPUT_STATE)
   }
 
-  agent {
-    docker {
-      image IMAGE_TAG
-      label AGENT_LABELS
-      args '-e PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/workdir/.local/bin'
-    }
-  }
+  agent { label AGENT_LABELS }
+  // { docker { image IMAGE_TAG
+                   // label AGENT_LABELS }}
+
   options {
     // Checkout the repository to this folder instead of root
     checkoutToSubdirectory('zephyr')
@@ -51,63 +48,66 @@ pipeline {
       ZEPHYR_TOOLCHAIN_VARIANT = 'zephyr'
       GNUARMEMB_TOOLCHAIN_PATH = '/workdir/gcc-arm-none-eabi-7-2018-q2-update'
       ZEPHYR_SDK_INSTALL_DIR = '/opt/zephyr-sdk'
+      DOCKER_REG =  'itsrv80.nordicsemi.no'
   }
 
   stages {
     stage('Load') { steps { script { CI_STATE = lib_Stage.load('ZEPHYR') }}}
-    stage('Checkout') {
-      steps { script {
-        lib_Main.cloneCItools(JOB_NAME)
-        dir('zephyr') {
-          CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
-          lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
-        }
-      }}
-    }
-    stage('Get nRF && Apply Parent Manifest Updates') {
-      when { expression { CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
-      steps { script {
-        lib_Status.set("PENDING", 'ZEPHYR', CI_STATE);
-        lib_West.InitUpdate('zephyr')
-        lib_West.ApplyManifestUpdates(CI_STATE)
-      }}
-    }
-    stage('Run compliance check') {
-      when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
-      steps {
-        dir('zephyr') {
-          script {
-            def BUILD_TYPE = lib_Main.getBuildType(CI_STATE.ZEPHYR)
-            if (BUILD_TYPE == "PR") {
-              COMMIT_RANGE = "$CI_STATE.ZEPHYR.MERGE_BASE..$CI_STATE.ZEPHYR.REPORT_SHA"
-              COMPLIANCE_ARGS = "$COMPLIANCE_ARGS -p $CHANGE_ID -S $CI_STATE.ZEPHYR.REPORT_SHA -g"
-              println "Building a PR [$CHANGE_ID]: $COMMIT_RANGE"
-            }
-            else if (BUILD_TYPE == "TAG") {
-              COMMIT_RANGE = "tags/${env.BRANCH_NAME}..tags/${env.BRANCH_NAME}"
-              println "Building a Tag: " + COMMIT_RANGE
-            }
-            // If not a PR, it's a non-PR-branch or master build. Compare against the origin.
-            else if (BUILD_TYPE == "BRANCH") {
-              COMMIT_RANGE = "origin/${env.BRANCH_NAME}..HEAD"
-              println "Building a Branch: " + COMMIT_RANGE
-            }
-            else {
-                assert condition : "Build fails because it is not a PR/Tag/Branch"
-            }
+    // stage('Checkout') {
+    //   steps { script {
+    //     lib_Main.cloneCItools(JOB_NAME)
+    //     dir('zephyr') {
+    //       CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
+    //       lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
+    //     }
+    //   }}
+    // }
+    // stage('Get nRF && Apply Parent Manifest Updates') {
+    //   when { expression { CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
+    //   steps { script {
+    //     lib_Status.set("PENDING", 'ZEPHYR', CI_STATE);
+    //     lib_West.InitUpdate('zephyr')
+    //     lib_West.ApplyManifestUpdates(CI_STATE)
+    //   }}
+    // }
+    // stage('Run compliance check') {
+    //   when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
+    //   steps {
+    //     dir('zephyr') {
+    //       script {
+    //         def BUILD_TYPE = lib_Main.getBuildType(CI_STATE.ZEPHYR)
+    //         if (BUILD_TYPE == "PR") {
+    //           COMMIT_RANGE = "$CI_STATE.ZEPHYR.MERGE_BASE..$CI_STATE.ZEPHYR.REPORT_SHA"
+    //           COMPLIANCE_ARGS = "$COMPLIANCE_ARGS -p $CHANGE_ID -S $CI_STATE.ZEPHYR.REPORT_SHA -g"
+    //           println "Building a PR [$CHANGE_ID]: $COMMIT_RANGE"
+    //         }
+    //         else if (BUILD_TYPE == "TAG") {
+    //           COMMIT_RANGE = "tags/${env.BRANCH_NAME}..tags/${env.BRANCH_NAME}"
+    //           println "Building a Tag: " + COMMIT_RANGE
+    //         }
+    //         // If not a PR, it's a non-PR-branch or master build. Compare against the origin.
+    //         else if (BUILD_TYPE == "BRANCH") {
+    //           COMMIT_RANGE = "origin/${env.BRANCH_NAME}..HEAD"
+    //           println "Building a Branch: " + COMMIT_RANGE
+    //         }
+    //         else {
+    //             assert condition : "Build fails because it is not a PR/Tag/Branch"
+    //         }
 
-            // Run the compliance check
-            try {
-              sh "(source ../zephyr/zephyr-env.sh && ../ci-tools/scripts/check_compliance.py $COMPLIANCE_ARGS --commits $COMMIT_RANGE)"
-            }
-            finally {
-              junit 'compliance.xml'
-              archiveArtifacts artifacts: 'compliance.xml'
-            }
-          }
-        }
-      }
-    }
+    //         // Run the compliance check
+    //         try {
+    //           sh "(source ../zephyr/zephyr-env.sh && ../ci-tools/scripts/check_compliance.py $COMPLIANCE_ARGS --commits $COMMIT_RANGE)"
+    //         }
+    //         finally {
+    //           junit 'compliance.xml'
+    //           archiveArtifacts artifacts: 'compliance.xml'
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+
+
     stage('Sanitycheck') {
       when { expression { CI_STATE.ZEPHYR.RUN_BUILD } }
       parallel {
@@ -115,26 +115,66 @@ pipeline {
           steps { script {
             dir('zephyr') {
               def jobs = [:]
-              CI_STATE.ZEPHYR.PLATFORMS.each {
-                jobs["${it}"] = {
-                  def PLATFORM_ARGS = lib_Main.getPlatformArgs("${it}")
-                  sh "source zephyr-env.sh && \
-                      (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM_ARGS || $SANITYCHECK_RETRY_CMDS"
-                }
-              }
+              println "CI_STATE.ZEPHYR.PLATFORMS = $CI_STATE.ZEPHYR.PLATFORMS"
+              def PLATFORM_LIST = lib_Main.getPlatformList(CI_STATE.ZEPHYR.PLATFORMS)
+              println "PLATFORM_LIST = $PLATFORM_LIST"
+              println "AGENT_LABELS = $AGENT_LABELS"
+              PLATFORM_LIST.eachWithIndex { PLATFORM, index ->
+                jobs[PLATFORM] = {
+                  node(AGENT_LABELS) {
+                    stage("SanityCheck - $PLATFORM"){
+                      checkout scm
+                      println "IMAGE_TAG = $IMAGE_TAG"
+                      docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
+                        stage("$PLATFORM") {
+                            echo "Running in $IMAGE_TAG"
+                        }
+                        stage("SANITY") {
+                            script {
+                                def PLATFORM_ARGS = lib_Main.getPlatformArgs(PLATFORM)
+                                println "Using Node:$NODE_NAME and Input Parameters:"
+                                lib_Main.cloneCItools(JOB_NAME)
+                                dir('zephyr') {
+                                  CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
+                                  lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
+                                }
+                                println "PLATFORM = $PLATFORM"
+                                println "PLATFORM_ARGS = $PLATFORM_ARGS"
+                            }
+                        }
+                      }
+                                        // script {
+                                        //   def PLATFORM_ARGS = lib_Main.getPlatformArgs(PLATFORM)
+                                        //   println "Using Node:$NODE_NAME and Input Parameters:"
+                                        //   lib_Main.cloneCItools(JOB_NAME)
+                                        //   // dir('zephyr') {
+                                        //   //   CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
+                                        //   //   lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
+                                        //   // }
+                                        //   // lib_West.InitUpdate('zephyr')
+                                        //   // lib_West.ApplyManifestUpdates(CI_STATE)
+                                        //   println "PLATFORM = $PLATFORM"
+                                        //   println "PLATFORM_ARGS = $PLATFORM_ARGS"
+                                        //   // sh "source zephyr-env.sh && \
+                                        //   //     (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM_ARGS || $SANITYCHECK_RETRY_CMDS"
+                                        // }
+                    } // stage
+                  } // node
+                } // jobs
+              } //eachWithIndex
               parallel jobs
             }
           }}
         }
-        stage('All Platforms') {
-          when { expression { CI_STATE.ORIGIN.BUILD_TYPE != 'PR' } }
-          steps { script {
-            dir('zephyr') {
-              sh "source zephyr-env.sh && \
-                  (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH || $SANITYCHECK_RETRY_CMDS"
-            }
-          }
-        }}
+        // stage('All Platforms') {
+        //   when { expression { CI_STATE.ORIGIN.BUILD_TYPE != 'PR' } }
+        //   steps { script {
+        //     dir('zephyr') {
+        //       sh "source zephyr-env.sh && \
+        //           (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH || $SANITYCHECK_RETRY_CMDS"
+        //     }
+        //   }
+        // }}
       }
     }
 
