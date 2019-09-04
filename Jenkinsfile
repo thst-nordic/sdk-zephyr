@@ -55,43 +55,28 @@ pipeline {
 
   stages {
     stage('Load') { steps { script { CI_STATE = lib_Stage.load('ZEPHYR') }}}
-                      // stage('Checkout') {
-                      //   steps { script {
-                      //     lib_Main.cloneCItools(JOB_NAME)
-                      //     dir('zephyr') {
-                      //       CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
-                      //       lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
-                      //     }
-                      //   }}
-                      // }
-                      // stage('Get nRF && Apply Parent Manifest Updates') {
-                      //   when { expression { CI_STATE.ZEPHYR.RUN_TESTS || CI_STATE.ZEPHYR.RUN_BUILD } }
-                      //   steps { script {
-                      //     lib_Status.set("PENDING", 'ZEPHYR', CI_STATE);
-                      //     lib_West.InitUpdate('zephyr')
-                      //     lib_West.ApplyManifestUpdates(CI_STATE)
-                      //   }}
-                      // }
     stage('Run compliance check') {
       when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
-      steps {
-        stages {
-          node(AGENT_LABELS) {
-            stages { steps { script {
-              docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
-                println "help"
-                lib_Main.cloneCItools(JOB_NAME)
-                dir('zephyr') {
-                  checkout scm
-                  CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
-                  lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
-                }
-                lib_West.InitUpdate('zephyr')
-                lib_West.ApplyManifestUpdates(CI_STATE)
-              } // docker
-            } } }
-          } // stage
-        } // node
+      stages {
+        stage ('asdf') {
+          steps {
+            node(AGENT_LABELS) {
+              stages { steps { script {
+                docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
+                  println "help"
+                  lib_Main.cloneCItools(JOB_NAME)
+                  dir('zephyr') {
+                    checkout scm
+                    CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
+                    lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
+                  }
+                  lib_West.InitUpdate('zephyr')
+                  lib_West.ApplyManifestUpdates(CI_STATE)
+                } // docker
+              } } }
+            }
+          }
+        }
       }
     } // stage
             //   steps { script {
