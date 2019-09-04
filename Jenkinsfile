@@ -122,14 +122,14 @@ pipeline {
               PLATFORM_LIST.eachWithIndex { PLATFORM, index ->
                 jobs[PLATFORM] = {
                   node(AGENT_LABELS) {
-                    stage("SanityCheck - $PLATFORM"){
+                    stage('SanityCheck'){
                       println "IMAGE_TAG = $IMAGE_TAG"
                       docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
                         stage("$PLATFORM") {
-                            echo "Running in $IMAGE_TAG"
-                            cleanWs()
                         }
                         stage("SANITY") {
+                            echo "Running on $NODE_NAME and in $IMAGE_TAG"
+                            cleanWs()
                             script {
                                 def PLATFORM_ARGS = lib_Main.getPlatformArgs(PLATFORM)
                                 println "Using Node:$NODE_NAME and Input Parameters:"
