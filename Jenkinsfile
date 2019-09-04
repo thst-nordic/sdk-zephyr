@@ -128,7 +128,6 @@ pipeline {
                             echo "Running on $NODE_NAME and in $IMAGE_TAG"
                             script {
                                 def PLATFORM_ARGS = lib_Main.getPlatformArgs(PLATFORM)
-                                println "Using Node:$NODE_NAME and Input Parameters:"
                                 lib_Main.cloneCItools(JOB_NAME)
                                 dir('zephyr') {
                                   checkout scm
