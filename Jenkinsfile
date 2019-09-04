@@ -136,10 +136,14 @@ pipeline {
                                 lib_Main.cloneCItools(JOB_NAME)
                                 dir('zephyr') {
                                   CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
-                                  lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
+                                  // lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
                                 }
+                                lib_West.InitUpdate('zephyr')
+                                lib_West.ApplyManifestUpdates(CI_STATE)
                                 println "PLATFORM = $PLATFORM"
                                 println "PLATFORM_ARGS = $PLATFORM_ARGS"
+                                sh "source zephyr-env.sh && \
+                                      (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM_ARGS || $SANITYCHECK_RETRY_CMDS"
                             }
                         }
                       }
