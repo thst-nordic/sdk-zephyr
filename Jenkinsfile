@@ -20,13 +20,13 @@ pipeline {
   }
 
   agent { label AGENT_LABELS }
-  // agent { docker { image IMAGE_TAG
-  //                  label AGENT_LABELS }}
+                            // agent { docker { image IMAGE_TAG
+                            //                  label AGENT_LABELS }}
 
   options {
     // Checkout the repository to this folder instead of root
-    // checkoutToSubdirectory('zephyr')
-    skipDefaultCheckout()
+    checkoutToSubdirectory('zephyr')
+    // skipDefaultCheckout()
     timeout(time: TIMEOUT.time, unit: TIMEOUT.unit)
   }
 
