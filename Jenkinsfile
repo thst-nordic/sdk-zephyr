@@ -20,7 +20,7 @@ pipeline {
   }
 
   agent { label AGENT_LABELS }
-  // { docker { image IMAGE_TAG
+  // agent { docker { image IMAGE_TAG
                    // label AGENT_LABELS }}
 
   options {
@@ -114,61 +114,43 @@ pipeline {
       parallel {
         stage('nRF Platforms') {
           steps { script {
-            dir('zephyr') {
-              def jobs = [:]
-              // println "CI_STATE.ZEPHYR.PLATFORMS = $CI_STATE.ZEPHYR.PLATFORMS"
-              def PLATFORM_LIST = lib_Main.getPlatformList(CI_STATE.ZEPHYR.PLATFORMS)
-              // println "PLATFORM_LIST = $PLATFORM_LIST"
-              // println "AGENT_LABELS = $AGENT_LABELS"
-              PLATFORM_LIST.eachWithIndex { PLATFORM, index ->
-                jobs[PLATFORM] = {
-                  node(AGENT_LABELS) {
-                    stage('SanityCheck'){
-                      docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
-                        stage("SANITY") {
-                            echo "Running on $NODE_NAME and in $IMAGE_TAG"
-                            script {
-                                def PLATFORM_ARGS = lib_Main.getPlatformArgs(PLATFORM)
-                                lib_Main.cloneCItools(JOB_NAME)
-                                dir('zephyr') {
-                                  checkout scm
-                                  CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
-                                  lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
-                                }
-                                sh "pwd; ls -al"
-                                lib_West.InitUpdate('zephyr')
-                                lib_West.ApplyManifestUpdates(CI_STATE)
-                                println "PLATFORM = $PLATFORM"
-                                println "PLATFORM_ARGS = $PLATFORM_ARGS"
-                                dir('zephyr') {
-                                  sh "source zephyr-env.sh && \
-                                      (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM_ARGS || $SANITYCHECK_RETRY_CMDS"
-                                }
-                            }
-                            // cleanWs()
-                        }
-                      }
-                                        // script {
-                                        //   def PLATFORM_ARGS = lib_Main.getPlatformArgs(PLATFORM)
-                                        //   println "Using Node:$NODE_NAME and Input Parameters:"
-                                        //   lib_Main.cloneCItools(JOB_NAME)
-                                        //   // dir('zephyr') {
-                                        //   //   CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
-                                        //   //   lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
-                                        //   // }
-                                        //   // lib_West.InitUpdate('zephyr')
-                                        //   // lib_West.ApplyManifestUpdates(CI_STATE)
-                                        //   println "PLATFORM = $PLATFORM"
-                                        //   println "PLATFORM_ARGS = $PLATFORM_ARGS"
-                                        //   // sh "source zephyr-env.sh && \
-                                        //   //     (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM_ARGS || $SANITYCHECK_RETRY_CMDS"
-                                        // }
-                    } // stage
-                  } // node
-                } // jobs
-              } //eachWithIndex
-              parallel jobs
-            }
+            def jobs = [:]
+            def PLATFORM_LIST = lib_Main.getPlatformList(CI_STATE.ZEPHYR.PLATFORMS)
+            // println "CI_STATE.ZEPHYR.PLATFORMS = $CI_STATE.ZEPHYR.PLATFORMS"
+            // println "PLATFORM_LIST = $PLATFORM_LIST"
+            // println "AGENT_LABELS = $AGENT_LABELS"
+            PLATFORM_LIST.eachWithIndex { PLATFORM, index ->
+              jobs[PLATFORM] = {
+                node(AGENT_LABELS) {
+                  stage('SanityCheck') {
+                    // docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
+                    //   stage("SANITY") {
+                    //     echo "Running on $NODE_NAME and in $IMAGE_TAG"
+                    //     script {
+                    //       // def PLATFORM_ARGS = lib_Main.getPlatformArgs(PLATFORM)
+                    //       // lib_Main.cloneCItools(JOB_NAME)
+                    //       // dir('zephyr') {
+                    //       //   checkout scm
+                    //       //   CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
+                    //       //   lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
+                    //       // }
+                    //       // sh "pwd; ls -al"
+                    //       // lib_West.InitUpdate('zephyr')
+                    //       // lib_West.ApplyManifestUpdates(CI_STATE)
+                    //       // println "PLATFORM = $PLATFORM"
+                    //       // println "PLATFORM_ARGS = $PLATFORM_ARGS"
+                    //       // dir('zephyr') {
+                    //       //   sh "source zephyr-env.sh && \
+                    //       //       (./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM_ARGS || $SANITYCHECK_RETRY_CMDS"
+                    //       // } //dir
+                    //     } // script
+                    //   } .//stage
+                    // } // docker.image
+                  } // stage
+                } // node
+              } // jobs
+            } //eachWithIndex
+            parallel jobs
           }}
         }
         // stage('All Platforms') {
@@ -202,7 +184,7 @@ pipeline {
   //       }
   //     }
   //   }
-  // }
+  }
 
   post {
     // This is the order that the methods are run. {always->success/abort/failure/unstable->cleanup}
