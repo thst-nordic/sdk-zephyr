@@ -137,8 +137,9 @@ pipeline {
                                 dir('zephyr') {
                                   CI_STATE.ZEPHYR.REPORT_SHA = lib_Main.checkoutRepo(CI_STATE.ZEPHYR.GIT_URL, "ZEPHYR", CI_STATE.ZEPHYR, false)
                                   lib_West.AddManifestUpdate("ZEPHYR", 'zephyr', CI_STATE.ZEPHYR.GIT_URL, CI_STATE.ZEPHYR.GIT_REF, CI_STATE)
+                                  sh "pwd; ls -al"
                                 }
-                                sh "ls -al"
+                                sh "pwd; ls -al"
                                 lib_West.InitUpdate('zephyr')
                                 lib_West.ApplyManifestUpdates(CI_STATE)
                                 println "PLATFORM = $PLATFORM"
