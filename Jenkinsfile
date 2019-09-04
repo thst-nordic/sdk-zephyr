@@ -62,7 +62,7 @@ pipeline {
         jobs['compliance'] = {
           node(AGENT_LABELS) {
             stage('asdf') {
-              when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
+              // when { expression { CI_STATE.ZEPHYR.RUN_TESTS } }
               steps {
                 docker.image("$DOCKER_REG/$IMAGE_TAG").inside {
                   script {
