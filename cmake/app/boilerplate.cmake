@@ -540,6 +540,8 @@ if(${IMAGE}DTC_OVERLAY_FILE)
   # environment variable DTC_OVERLAY_FILE
 elseif(DEFINED ENV{${IMAGE}DTC_OVERLAY_FILE})
   set(${IMAGE}DTC_OVERLAY_FILE $ENV{${IMAGE}DTC_OVERLAY_FILE})
+elseif(EXISTS          ${APPLICATION_SOURCE_DIR}/boards/${BOARD}.overlay)
+  set(DTC_OVERLAY_FILE ${APPLICATION_SOURCE_DIR}/boards/${BOARD}.overlay)
 elseif(EXISTS          ${APPLICATION_SOURCE_DIR}/${BOARD}.overlay)
   set(${IMAGE}DTC_OVERLAY_FILE ${APPLICATION_SOURCE_DIR}/${BOARD}.overlay)
 elseif(EXISTS          ${APPLICATION_SOURCE_DIR}/app.overlay)
@@ -575,6 +577,15 @@ else()
 endif()
 
 include(${ZEPHYR_BASE}/cmake/target_toolchain.cmake)
+
+project(Zephyr-Kernel VERSION ${PROJECT_VERSION})
+enable_language(C CXX ASM)
+
+# 'project' sets PROJECT_BINARY_DIR to ${CMAKE_CURRENT_BINARY_DIR},
+# but for legacy reasons we need it to be set to
+# ${CMAKE_CURRENT_BINARY_DIR}/zephyr
+set(PROJECT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/zephyr)
+set(PROJECT_SOURCE_DIR ${ZEPHYR_BASE})
 
 set(KERNEL_NAME ${CONFIG_KERNEL_BIN_NAME})
 

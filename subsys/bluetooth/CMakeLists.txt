@@ -15,5 +15,3 @@ if(CONFIG_BT_CTLR)
     add_subdirectory(controller)
   endif()
 endif()
-
-target_link_libraries(${IMAGE}subsys__bluetooth INTERFACE ${IMAGE}zephyr_interface)
