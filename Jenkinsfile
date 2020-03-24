@@ -141,7 +141,7 @@ pipeline {
       }
 
       if (CI_STATE.SELF.RUN_BUILD) {
-        def SUBSET_LIST = ['1/4', '2/4', '3/4', '4/4' ]
+        def SUBSET_LIST = ['1/300']
         def COMPILER_LIST = ['gnuarmemb'] // 'zephyr',
         def INPUT_MAP = [set : SUBSET_LIST, compiler : COMPILER_LIST ]
 
