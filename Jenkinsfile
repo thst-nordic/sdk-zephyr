@@ -244,6 +244,7 @@ def generateParallelStageNRF(subset, compiler, JOB_NAME, CI_STATE) {
               sh """
                   export ZEPHYR_TOOLCHAIN_VARIANT='$compiler' && \
                   source zephyr-env.sh && \
+                  pip install --user pyasn1 && \
                   ./scripts/sanitycheck $SANITYCHECK_OPTIONS $ARCH $PLATFORM_ARGS --subset $subset || $SANITYCHECK_RETRY_CMDS
                  """
             }
