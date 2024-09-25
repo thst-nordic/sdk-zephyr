@@ -40,14 +40,6 @@
     - nrf9160dk_nrf9160_ns
   comment: "Flash overflows"
 
-# libsdl2-dev package should be added into docker image
-- scenarios:
-    - sample.boards.nrf.nrf_led_matrix
-    - sample.display.lvgl.gui
-  platforms:
-    - native_posix
-  comment: "libsdl2-dev package not available"
-
 - scenarios:
     - sample.net.sockets.echo_server.usbnet
     - sample.net.sockets.echo_server.usbnet_composite
