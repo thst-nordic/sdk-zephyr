@@ -34,6 +34,7 @@ from elftools.dwarf.descriptions import (
     describe_DWARF_expr, set_global_machine_arch)
 from elftools.dwarf.locationlists import (
     LocationExpr, LocationParser)
+from elftools.common.exceptions import ELFParseError
 
 if version.parse(elftools.__version__) < version.parse('0.24'):
     sys.exit("pyelftools is out of date, need version 0.24 or later")
@@ -82,15 +83,18 @@ def get_die_mapped_address(die, parser, dwarfinfo):
         if 'DW_AT_location' in die.attributes:
             loc_attr = die.attributes['DW_AT_location']
             if parser.attribute_has_location(loc_attr, die.cu['version']):
-                loc = parser.parse_from_attribute(loc_attr, die.cu['version'], die)
-                if isinstance(loc, LocationExpr):
-                    addr = describe_DWARF_expr(loc.loc_expr,
-                                               dwarfinfo.structs)
+                try:
+                    loc = parser.parse_from_attribute(loc_attr, die.cu['version'], die)
+                    if isinstance(loc, LocationExpr):
+                        addr = describe_DWARF_expr(loc.loc_expr,
+                                                   dwarfinfo.structs)
 
-                    matcher = DT_LOCATION.match(addr)
-                    if matcher:
-                        low = int(matcher.group(1), 16)
-                        high = low + 1
+                        matcher = DT_LOCATION.match(addr)
+                        if matcher:
+                            low = int(matcher.group(1), 16)
+                            high = low + 1
+                except Exception as e:
+                    print(f"ELFParseError: Ignoring object: {die.attributes['DW_AT_location'].value}, {die.cu['version']}, {die}")
 
     if die.tag == 'DW_TAG_subprogram':
         if 'DW_AT_low_pc' in die.attributes:
